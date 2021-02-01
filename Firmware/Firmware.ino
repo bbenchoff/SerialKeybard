@@ -3,6 +3,7 @@
 #include <Adafruit_Keypad_Ringbuffer.h>
 #include <Adafruit_GFX.h>
 #include "Adafruit_LEDBackpack.h"
+#include "Adafruit_MCP23017.h"
 
 const byte ROWS = 4;
 const byte COLS = 5;
@@ -19,65 +20,97 @@ byte colPins[COLS] = {18,17,16,15,14};
 Adafruit_AlphaNum4 alpha = Adafruit_AlphaNum4();
 Adafruit_Keypad keypad = Adafruit_Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
 
+Adafruit_MCP23017 mcp;
+
+
 int value = NULL;
 
-void WriteToDisplay(int value)
-{
-
-  
-  if(value == NULL)
-  {
-    alpha.writeDigitAscii(0, 0xFF);
-    alpha.writeDigitAscii(1, 0xFF);
-  }
-  else
-  {
-        String hexString = String(value, HEX);
-        hexString.toUpperCase();
-        alpha.writeDigitAscii(0, hexString[0]);
-        if(hexString[1] == NULL)
-        {
-          alpha.writeDigitAscii(1, hexString[0]);
-          alpha.writeDigitAscii(0, '0');
-        }
-        else
-        {
-          alpha.writeDigitAscii(0, hexString[0]);
-          alpha.writeDigitAscii(1, hexString[1]);
-        }
-  }
-  alpha.writeDisplay();
-}
-
-void TransmitValue(int value)
-{
-  Serial1.print(char(value));
-}
 void setup()
 {
-  Serial1.begin(9600);
   keypad.begin();
   alpha.begin(0x70);
+
 }
 
 void loop() 
 {
-
-  char currentKey;
-
-  
   keypad.tick();
 
-  /*
-  for(int i = 0 ; i < 255 ; i++)
+  KeypadLoop();
+  delay(40);
+}
+
+void TransmitValue(int value)
+{
+  int mcpPins[] = {1,2,3,4,5,6,7,8,9,10,14,15};
+  long baudValue[] = {115200,57600,19200,9600,2400,1200,300};
+  char parityValue[] = {'N','E','O'};
+
+  long baudRate;
+  char parity;
+  int stopBit = 1;
+  
+  mcp.begin();
+
+  for(int i = 0 ; i < 12 ; i++)
   {
-    WriteToDisplay(i);
-    delay(50);
+    mcp.pinMode(mcpPins[i], INPUT);
+  }  
+
+  //read the baud rate dial
+  for(int i = 0 ; i < 7 ; i++)
+  {
+    if(mcp.digitalRead(mcpPins[i]) == HIGH)
+      baudRate = baudValue[i];
   }
-  */
 
+  //read the parity
+  for(int i = 7 ; i < 10 ; i++)
+  {
+    if(mcp.digitalRead(mcpPins[i]) == HIGH)
+      parity == parityValue[(i-7)];
+  }
 
-  while(keypad.available())
+  //read the stop bits
+  if(mcp.digitalRead(14) == HIGH)
+    stopBit = 1;
+  else
+    stopBit = 2;
+    
+  //put it all together
+  if(stopBit == 1 && parity == 'N')
+    Serial1.begin(baudRate, SERIAL_8N1);
+  else if(stopBit == 1 && parity == 'E')
+    Serial1.begin(baudRate, SERIAL_8E1);
+  else if(stopBit == 1 && parity == 'O')
+    Serial1.begin(baudRate, SERIAL_8O1);
+  else if(stopBit == 2 && parity == 'N')
+    Serial1.begin(baudRate, SERIAL_8N2);
+  else if(stopBit == 2 && parity == 'E')
+    Serial1.begin(baudRate, SERIAL_8E2);
+  else if(stopBit == 2 && parity == 'O')
+    Serial1.begin(baudRate, SERIAL_8O2);
+
+  //comment the below lines out when you're done testing
+  Serial1.print("Baud: ");
+  Serial1.print(baudRate);
+  Serial1.print(" Parity: ");
+  Serial1.print(parity);
+  Serial1.print(" Stop: ");
+  Serial1.print(stopBit);
+  Serial1.print("  ");
+  
+
+  Serial1.print(char(value));
+
+  Serial1.end();
+}
+
+void KeypadLoop(void)
+{
+    char currentKey;  
+  
+    while(keypad.available())
   {
     keypadEvent e = keypad.read();
     if(e.bit.EVENT == KEY_JUST_PRESSED) 
@@ -201,8 +234,32 @@ void loop()
          
         }
       }
-
       WriteToDisplay(value);
     }
-    delay(40);
+}
+
+void WriteToDisplay(int value)
+{
+  if(value == NULL)
+  {
+    alpha.writeDigitAscii(0, 0xFF);
+    alpha.writeDigitAscii(1, 0xFF);
+  }
+  else
+  {
+        String hexString = String(value, HEX);
+        hexString.toUpperCase();
+        alpha.writeDigitAscii(0, hexString[0]);
+        if(hexString[1] == NULL)
+        {
+          alpha.writeDigitAscii(1, hexString[0]);
+          alpha.writeDigitAscii(0, '0');
+        }
+        else
+        {
+          alpha.writeDigitAscii(0, hexString[0]);
+          alpha.writeDigitAscii(1, hexString[1]);
+        }
+  }
+  alpha.writeDisplay();
 }
