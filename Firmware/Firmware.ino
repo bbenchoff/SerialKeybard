@@ -29,7 +29,6 @@ void setup()
 {
   keypad.begin();
   alpha.begin(0x70);
-
 }
 
 void loop() 
@@ -40,8 +39,9 @@ void loop()
   delay(40);
 }
 
-void TransmitValue(int value)
+void SetupSerial(void)
 {
+  /*  
   int mcpPins[] = {1,2,3,4,5,6,7,8,9,10,14,15};
   long baudValue[] = {115200,57600,19200,9600,2400,1200,300};
   char parityValue[] = {'N','E','O'};
@@ -51,11 +51,32 @@ void TransmitValue(int value)
   int stopBit = 1;
   
   mcp.begin();
+  mcp.pinMode(1, INPUT);
+  mcp.pinMode(2, INPUT);
+  mcp.pinMode(3, INPUT);
+  mcp.pinMode(4, INPUT);
+  mcp.pinMode(5, INPUT);
+  mcp.pinMode(6, INPUT);
+  mcp.pinMode(7, INPUT);
+  mcp.pinMode(8, INPUT);
+  mcp.pinMode(9, INPUT);
+  mcp.pinMode(10, INPUT);
+  mcp.pinMode(14, INPUT);
+  mcp.pinMode(15, INPUT);
+  
+  mcp.pullUp(1, HIGH);
+  mcp.pullUp(2, HIGH);
+  mcp.pullUp(3, HIGH);
+  mcp.pullUp(4, HIGH);
+  mcp.pullUp(5, HIGH);
+  mcp.pullUp(6, HIGH);
+  mcp.pullUp(7, HIGH);
+  mcp.pullUp(8, HIGH);
+  mcp.pullUp(9, HIGH);
+  mcp.pullUp(10, HIGH);
+  mcp.pullUp(14, HIGH);
+  mcp.pullUp(15, HIGH);
 
-  for(int i = 0 ; i < 12 ; i++)
-  {
-    mcp.pinMode(mcpPins[i], INPUT);
-  }  
 
   //read the baud rate dial
   for(int i = 0 ; i < 7 ; i++)
@@ -68,7 +89,7 @@ void TransmitValue(int value)
   for(int i = 7 ; i < 10 ; i++)
   {
     if(mcp.digitalRead(mcpPins[i]) == HIGH)
-      parity == parityValue[(i-7)];
+      parity = parityValue[(i-7)];
   }
 
   //read the stop bits
@@ -92,18 +113,25 @@ void TransmitValue(int value)
     Serial1.begin(baudRate, SERIAL_8O2);
 
   //comment the below lines out when you're done testing
-  Serial1.print("Baud: ");
-  Serial1.print(baudRate);
-  Serial1.print(" Parity: ");
-  Serial1.print(parity);
-  Serial1.print(" Stop: ");
-  Serial1.print(stopBit);
-  Serial1.print("  ");
-  
+  Serial.begin(9600);
+  Serial.print("Baud: ");
+  Serial.print(baudRate);
+  Serial.print(" Parity: ");
+  Serial.print(parity);
+  Serial.print(" Stop: ");
+  Serial.print(stopBit);
+  Serial.print("  \n\r");
+  */
 
+  Serial1.begin(9600);
+}
+
+void TransmitValue(int value)
+{
+  SetupSerial();
   Serial1.print(char(value));
 
-  Serial1.end();
+  //Serial1.end();
 }
 
 void KeypadLoop(void)
