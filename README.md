@@ -4,7 +4,7 @@ It's a keyboard that transmits serial. Or it's a 256-key keyboard, using 18 keys
 
 ## Notice
 
-This repo contains a few files, but is mostly geared towards an unoptimized build with the internal structure consisting of five(!) different PCBs. The SerialKeyboard.brd is just a 18-key keyboard with diodes. The DisplayCarrier.brd is an interposer between the Motherboard.brd, which is the only thing with active electronics. There's also an Arduino in there and the front panel, which makes for a grand total of five different PCBs in this project.
+This repo contains a few files, but is mostly geared towards an unoptimized build with the internal structure consisting of five(!) different PCBs. The SerialKeyboard.brd is just a 18-key keyboard with diodes. The DisplayCarrier.brd is an interposer between the display and Motherboard.brd, which is the only thing with active electronics. There's also an Arduino in there and the front panel, which makes for a grand total of five different PCBs in this project.
 
 I have started work on a simplified version, MasterBoard.brd, which would combine this all into one single circuit board. This work is not completed.
 
